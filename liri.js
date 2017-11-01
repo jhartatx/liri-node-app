@@ -1,28 +1,33 @@
 var keys = require("./keys.js");
 var fs = require("fs");
 var command = process.argv;
-var twitter = require('twitter');
+var commandTitle = process.argv[2];
+var Twitter = require('twitter');
 var Spotify = require('node-spotify-api');
 var request = require('request');
 
+var twitterKeys = keys.twitterKeys;
 
 //twitter
-if(command[2] === "my-tweets"){
-  var client = new twitter(keys.twitterKeys);
+function runTwitter(){
+  var client = new Twitter(twitterKeys);
   var params = {screen_name: 'JustinM01516019', count: 10};
   client.get('statuses/user_timeline', params, function(error, tweets, response) {
     if(error) {
       console.log(error);
     }
+    else{
     for(var i = 0; i < tweets.length; i++){
       console.log("On: " + tweets[i].created_at + "\n" + "You tweeted: " + tweets[i].text + "\n");
 
     }
+  }
   });
 }
 
 //OMDB
-if(command[2] === "movie-this") {
+
+function runOmdb() {
 var movieName = "";
 
 for (var i = 3; i < command.length; i++) {
@@ -58,8 +63,9 @@ request(queryUrl, function(error, response, body){
 };
 
 //spotify
+function runSpotify(){
 
-if(command[2] === "spotify-this-song"){
+
   var client = new Spotify(keys.spotifyKeys);
   var songSearch = "";
 
@@ -68,11 +74,11 @@ if(command[2] === "spotify-this-song"){
     if (i > 2 && i < command.length) {
       songSearch = songSearch + "+" + command[i];
     }
-    else {
-      songSearch += command[i];
-    }
+
 
 }
+
+
   client.search({ type: 'track', query: songSearch, limit: 1})
     .then(function(response) {
       // console.log(JSON.stringify(response, null, 2));
@@ -87,4 +93,29 @@ if(command[2] === "spotify-this-song"){
 
 }
 
-//artist, song name, preview link, album
+function doIt() {
+
+  fs.readFile('./random.txt', 'utf8', function (error, data) {
+		if (error) {
+			console.log(error);
+			return;
+		} else {
+
+			var cmdString = data.split(',');
+			var command = cmdString[0].trim();
+			var param = cmdString[1].trim();
+      console.log(data);
+		}
+	});
+
+}
+
+if (commandTitle === 'my-tweets') {
+	runTwitter();
+} else if(commandTitle === 'movie-this'){
+  runOmdb();
+} else if(commandTitle === 'spotify-this-song'){
+  runSpotify();
+} else if(commandTitle === 'do-what-it-says'){
+  doIt();
+}
